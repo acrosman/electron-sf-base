@@ -1,5 +1,4 @@
 const electron = require("electron"); // eslint-disable-line
-const jsforce = require('jsforce');
 
 // Module to control application life.
 const { app, BrowserWindow, ipcMain } = electron;
@@ -14,6 +13,9 @@ if (isDev) {
 const path = require('path');
 const url = require('url');
 
+// Import the functions that we can use in the render processes.
+const ipcFunctions = require('./src/sf_calls');
+
 // Get rid of the deprecated default.
 app.allowRendererProcessReuse = true;
 
@@ -21,11 +23,6 @@ app.allowRendererProcessReuse = true;
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
 let consoleWindow;
-
-// A global collection of the various SF Org connections currently open in the
-// app.
-// @TODOL: find a better way to do this that isn't a global.
-const sfConnections = {};
 
 // Create the main application window.
 function createWindow() {
@@ -55,6 +52,9 @@ function createWindow() {
       slashes: true,
     }),
   );
+
+  // Attach to IPC handlers
+  ipcFunctions.setwindow('main', mainWindow);
 
   // Emitted when the window is closed.
   mainWindow.on('closed', () => {
@@ -87,6 +87,9 @@ function createLoggingConsole() {
       slashes: true,
     }),
   );
+
+  // Attach to IPC handlers
+  ipcFunctions.setwindow('console', mainWindow);
 
   // Emitted when the window is closed.
   consoleWindow.on('closed', () => {
@@ -150,98 +153,8 @@ app.on('activate', () => {
   }
 });
 
-// @TODO: Break out the definition of all these into a file and just bulk load.
-
-// Handle Salesforce Login
-ipcMain.on('sf_login', (event, args) => {
-  const conn = new jsforce.Connection({
-    // you can change loginUrl to connect to sandbox or prerelease env.
-    loginUrl: args.url,
-  });
-
-  let { password } = args;
-  if (args.token !== '') {
-    password = `${password}${args.token}`;
-  }
-
-  conn.login(args.username, password, (err, userInfo) => {
-    if (err) {
-      consoleWindow.webContents.send('log_message', {
-        sender: event.sender.getTitle(),
-        channel: 'Error',
-        message: `Login Failed ${err}`,
-      });
-
-      mainWindow.webContents.send('sfShowOrgId', {
-        status: false,
-        message: 'Login Failed',
-        response: err,
-        limitInfo: conn.limitInfo,
-      });
-      return true;
-    }
-    // Now you can get the access token and instance URL information.
-    // Save them to establish connection next time.
-    consoleWindow.webContents.send('log_message', {
-      sender: event.sender.getTitle(),
-      channel: 'Info',
-      message: `New Connection to ${conn.instanceUrl} with Access Token ${conn.accessToken}`,
-    });
-    consoleWindow.webContents.send('log_message', {
-      sender: event.sender.getTitle(),
-      channel: 'Info',
-      message: `Connection Org ${userInfo.organizationId} for User ${userInfo.id}`,
-    });
-
-    // Save the next connection in the global storage.
-    sfConnections[userInfo.organizationId] = conn;
-
-    mainWindow.webContents.send('response_login', {
-      status: true,
-      message: 'Login Successful',
-      response: userInfo,
-    });
-    return true;
-  });
-});
-
-/**
- * Logout of a Salesforce org.
- */
-ipcMain.on('sf_logout', (event, args) => {
-  const conn = sfConnections[args.org];
-  conn.logout((err) => {
-    if (err) {
-      mainWindow.webContents.send('response_logout', {
-        status: false,
-        message: 'Logout Failed',
-        response: `${err}`,
-        limitInfo: conn.limitInfo,
-      });
-      consoleWindow.webContents.send('log_message', {
-        sender: event.sender.getTitle(),
-        channel: 'Error',
-        message: `Logout Failed ${err}`,
-      });
-      return true;
-    }
-    // now the session has been expired.
-    mainWindow.webContents.send('response_logout', {
-      status: true,
-      message: 'Logout Successful',
-      response: {},
-      limitInfo: conn.limitInfo,
-    });
-    return true;
-  });
-});
-
-// Get a logging message from a renderer.
-ipcMain.on('send_log', (event, args) => {
-  consoleWindow.webContents.send('log_message', {
-    sender: event.sender.getTitle(),
-    channel: args.channel,
-    message: args.message,
-  });
-  return true;
+// Add the list of handlers provided in the ElectronForce.handlers library.
+const efHandlers = Object.getOwnPropertyNames(ipcFunctions.handlers);
+efHandlers.forEach((value) => {
+  ipcMain.on(value, ipcFunctions.handlers[value]);
 });

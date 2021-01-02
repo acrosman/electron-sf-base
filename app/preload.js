@@ -1,5 +1,6 @@
 // Preload script.
 const { contextBridge, ipcRenderer, remote } = require('electron');  // eslint-disable-line
+const { handlers } = require('../src/sf_calls.js');
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object.
@@ -8,11 +9,7 @@ contextBridge.exposeInMainWorld(
   'api', {
     send: (channel, data) => {
       // List channels to allow.
-      const validChannels = [
-        'send_log',
-        'sf_login',
-        'sf_logout',
-      ];
+      const validChannels = Object.getOwnPropertyNames(handlers);
       if (validChannels.includes(channel)) {
         ipcRenderer.send(channel, data);
       }
