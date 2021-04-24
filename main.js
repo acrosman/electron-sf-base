@@ -130,9 +130,7 @@ app.on('web-contents-created', (event, contents) => {
 
   // Block new windows from within the App
   // https://electronjs.org/docs/tutorial/security#13-disable-or-limit-creation-of-new-windows
-  contents.on('new-window', async (newevent) => {
-    newevent.preventDefault();
-  });
+  contents.setWindowOpenHandler(() => ({ action: 'deny' }));
 });
 
 app.on('activate', () => {
