@@ -6,6 +6,8 @@ $.when($.ready).then(() => {
   $('#results-table-wrapper').hide();
   $('#results-message-wrapper').hide();
   $('#results-object-viewer-wrapper').hide();
+  // Get the current application preferences.
+  window.api.send('get_preferences');
 });
 
 // ============= Helpers ==============
@@ -278,4 +280,11 @@ window.api.receive('response_logout', (data) => {
 // Generic Response.
 window.api.receive('response_generic', (data) => {
   displayRawResponse(data);
+});
+
+// Get Preference Updates
+window.api.receive('current_preferences', (data) => {
+  // Update the theme:
+  const cssPath = `../node_modules/bootswatch/dist/${data.theme.toLowerCase()}/bootstrap.min.css`;
+  document.getElementById('css-theme-link').href = cssPath;
 });
