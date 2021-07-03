@@ -2,18 +2,30 @@ const jsforce = require('jsforce');
 
 const sfConnections = {};
 let mainWindow = null;
-let consoleWindow = null;
 
 const setwindow = (windowName, window) => {
   switch (windowName) {
-    case 'console':
-      consoleWindow = window;
-      break;
     case 'main':
     default:
       mainWindow = window;
       break;
   }
+};
+
+/**
+ * Send a log message to the console window.
+ * @param {String} title  Message title or sender
+ * @param {String} channel  Message category
+ * @param {String} message  Message
+ * @returns True (always).
+ */
+const logMessage = (title, channel, message) => {
+  mainWindow.webContents.send('log_message', {
+    sender: title,
+    channel,
+    message,
+  });
+  return true;
 };
 
 const handlers = {
@@ -36,11 +48,11 @@ const handlers = {
       args.token = '';
 
       if (err) {
-        consoleWindow.webContents.send('log_message', {
-          sender: event.sender.getTitle(),
-          channel: 'Error',
-          message: `Login Failed ${err}`,
-        });
+        logMessage(
+          event.sender.getTitle(),
+          'Error',
+          `Login Failed ${err}`,
+        );
 
         mainWindow.webContents.send('sfShowOrgId', {
           status: false,
@@ -53,16 +65,11 @@ const handlers = {
       }
       // Now you can get the access token and instance URL information.
       // Save them to establish connection next time.
-      consoleWindow.webContents.send('log_message', {
-        sender: event.sender.getTitle(),
-        channel: 'Info',
-        message: `New Connection to ${conn.instanceUrl} with Access Token ${conn.accessToken}`,
-      });
-      consoleWindow.webContents.send('log_message', {
-        sender: event.sender.getTitle(),
-        channel: 'Info',
-        message: `Connection Org ${userInfo.organizationId} for User ${userInfo.id}`,
-      });
+      logMessage(
+        event.sender.getTitle(),
+        'Info',
+        `Connection Org ${userInfo.organizationId} for User ${userInfo.id}`,
+      );
 
       // Save the next connection in the global storage.
       sfConnections[userInfo.organizationId] = {
@@ -92,11 +99,11 @@ const handlers = {
           limitInfo: conn.limitInfo,
           request: args,
         });
-        consoleWindow.webContents.send('log_message', {
-          sender: event.sender.getTitle(),
-          channel: 'Error',
-          message: `Logout Failed ${err}`,
-        });
+        logMessage(
+          event.sender.getTitle(),
+          'Error',
+          `Logout Failed ${err}`,
+        );
         return true;
       }
       // now the session has been expired.
@@ -112,11 +119,11 @@ const handlers = {
     });
   },
   send_log: (event, args) => {
-    consoleWindow.webContents.send('log_message', {
-      sender: event.sender.getTitle(),
-      channel: args.channel,
-      message: args.message,
-    });
+    logMessage(
+      event.sender.getTitle(),
+      args.channel,
+      args.message,
+    );
     return true;
   },
 };

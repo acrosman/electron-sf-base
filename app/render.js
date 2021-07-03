@@ -15,6 +15,84 @@ const replaceText = (selector, text) => {
   if (element) element.innerText = text;
 };
 
+// Escapes HTML tags that may be headed to the log messages.
+const escapeHTML = (html) => {
+  const escape = document.createElement('textarea');
+  escape.textContent = html;
+  return escape.innerHTML;
+};
+
+/**
+ * Displays an object as JSON in the raw response section of the interface.
+ * @param {Object} responseObject The JSForce response object.
+ */
+const displayRawResponse = (responseObject) => {
+  $('#raw-response').jsonViewer(responseObject, {
+    collapsed: true,
+    rootCollapsable: false,
+    withQuotes: true,
+    withLinks: true,
+  });
+};
+
+/**
+ * Log a message to the console.
+ * @param {String} context The part of the system that generated the message.
+ * @param {String} importance The level of importance of the message.
+ * @param {String} message The message to display.
+ * @param {*} data Raw data to display in JSON viewer.
+ */
+function logMessage(context, importance, message, data) {
+  // Create elements for display.
+  const logTable = document.getElementById('consoleMessageTable');
+  const row = logTable.insertRow(1);
+  const mesImportance = document.createElement('td');
+  const mesContext = document.createElement('td');
+  const mesText = document.createElement('td');
+  const mesData = document.createElement('td');
+
+  // Add Classes.
+  mesText.setAttribute('class', 'console-message');
+  mesData.setAttribute('class', 'console-raw-data');
+
+  // Set the row highlights as needed.
+  switch (importance.toLowerCase()) {
+    case 'error':
+      row.className += 'table-danger';
+      break;
+    case 'warning':
+    case 'warn':
+      row.className += 'table-warning';
+      break;
+    case 'success':
+      row.className += 'table-success';
+      break;
+    default:
+      break;
+  }
+
+  // Add Text
+  mesContext.innerHTML = context;
+  mesImportance.innerHTML = importance;
+  mesText.innerHTML = escapeHTML(message);
+
+  // Attach Elements
+  row.appendChild(mesImportance);
+  row.appendChild(mesContext);
+  row.appendChild(mesText);
+  row.appendChild(mesData);
+
+  if (data) {
+    displayRawResponse(data);
+    $('#consoleMessageTable :last-child td.console-raw-data').jsonViewer(data, {
+      collapsed: true,
+      rootCollapsable: false,
+      withQuotes: true,
+      withLinks: true,
+    });
+  }
+}
+
 // Convert a simple object with name/value pairs, and sub-objects into an Unordered list
 const object2ul = (data) => {
   const ul = document.createElement('ul');
@@ -61,19 +139,6 @@ const generateTableCell = (tableRow, content) => {
   const cellNode = document.createElement('td');
   cellNode.appendChild(contentNode);
   tableRow.appendChild(cellNode);
-};
-
-/**
- * Displays an object as JSON in the raw response section of the interface.
- * @param {Object} responseObject The JSForce response object.
- */
-const displayRawResponse = (responseObject) => {
-  $('#raw-response').jsonViewer(responseObject, {
-    collapsed: true,
-    rootCollapsable: false,
-    withQuotes: true,
-    withLinks: true,
-  });
 };
 
 /**
@@ -181,6 +246,11 @@ document.getElementById('logout-trigger').addEventListener('click', () => {
 });
 
 // ===== Response handlers from IPC Messages to render context ======
+// Process a log message.
+window.api.receive('log_message', (data) => {
+  logMessage(data.sender, data.channel, data.message);
+});
+
 // Login response.
 window.api.receive('response_login', (data) => {
   if (data.status) {
