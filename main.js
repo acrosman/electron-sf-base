@@ -57,6 +57,7 @@ function createWindow() {
       nodeIntegration: false, // Disable nodeIntegration for security.
       nodeIntegrationInWorker: false,
       nodeIntegrationInSubFrames: false,
+      disableBlinkFeatures: 'Auxclick', // See: https://github.com/doyensec/electronegativity/wiki/AUXCLICK_JS_CHECK
       contextIsolation: true, // Enabling contextIsolation to protect against prototype pollution.
       worldSafeExecuteJavaScript: true, // https://github.com/electron/electron/pull/24712
       enableRemoteModule: false, // Turn off remote to avoid temptation.
