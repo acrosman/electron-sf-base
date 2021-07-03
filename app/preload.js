@@ -11,10 +11,11 @@ contextBridge.exposeInMainWorld(
     send: (channel, data) => {
       // List channels to allow.
       const validChannels = Object.getOwnPropertyNames(handlers);
+      validChannels.push('get_preferences');
+      validChannels.push('find_text');
       if (validChannels.includes(channel)) {
         ipcRenderer.send(channel, data);
       }
-      validChannels.push('get_preferences');
     },
     receive: (channel, func) => {
       const validChannels = [
@@ -23,6 +24,7 @@ contextBridge.exposeInMainWorld(
         'response_login',
         'response_logout',
         'response_generic',
+        'start_find',
       ];
       if (validChannels.includes(channel)) {
         // Remove the event to avoid information leaks.

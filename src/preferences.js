@@ -6,7 +6,9 @@ const appPath = app.getAppPath();
 const settingsPath = path.join(app.getPath('userData'), 'preferences.json');
 
 // A list of menu item IDs to disable when preference window is open.
-const nonPrefWindowItems = [];
+const nonPrefWindowItems = [
+  'find-menu-item',
+];
 
 let prefWindow;
 let mainWindow;

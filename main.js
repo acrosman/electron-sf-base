@@ -6,6 +6,7 @@ const {
   BrowserWindow,
   ipcMain,
   Menu,
+  session,
 } = electron;
 
 // Developer Dependencies.
@@ -19,6 +20,9 @@ const path = require('path');
 
 // Import the functions that we can use in the render processes.
 const ipcFunctions = require('./src/sf_calls');
+
+// Import Search support.
+const { executeSearch } = require('./src/find');
 
 // Import the menu template
 const { menuTemplate } = require('./src/menu');
@@ -47,6 +51,7 @@ function createWindow() {
     width: display.workArea.width,
     height: display.workArea.height,
     frame: true,
+    partition: 'persist: secured-partition',
     webPreferences: {
       devTools: isDev,
       nodeIntegration: false, // Disable nodeIntegration for security.
@@ -67,6 +72,15 @@ function createWindow() {
 
   // Attach to preference system.
   setMainWindow(mainWindow);
+
+  // Lock down session permissions.
+  // https://www.electronjs.org/docs/tutorial/security#4-handle-session-permission-requests-from-remote-content
+  // https://github.com/doyensec/electronegativity/wiki/PERMISSION_REQUEST_HANDLER_GLOBAL_CHECK
+  session
+    .fromPartition('persist: secured-partition')
+    .setPermissionRequestHandler((webContents, permission, callback) => {
+      callback(false);
+    });
 
   // Emitted when the window is closed.
   mainWindow.on('closed', () => {
@@ -145,3 +159,8 @@ ipcMain.on('get_preferences', () => {
 ipcMain.on('preferences_load', loadPreferences);
 ipcMain.on('preferences_save', savePreferences);
 ipcMain.on('preferences_close', closePreferences);
+
+// Find in Page IPC call.
+ipcMain.on('find_text', (event, searchSettings) => {
+  executeSearch(mainWindow.webContents, searchSettings.text, searchSettings.direction);
+});

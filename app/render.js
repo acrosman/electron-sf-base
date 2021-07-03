@@ -8,6 +8,28 @@ $.when($.ready).then(() => {
   $('#results-object-viewer-wrapper').hide();
   // Get the current application preferences.
   window.api.send('get_preferences');
+
+  // Setup Find button.
+  $('#btn-find-in-page').on('click', (event) => {
+    event.preventDefault();
+    let searchDir;
+    // Get the search
+    const searchText = $('#find-in-page-text').val().trim();
+
+    // Trigger the search if text was provided.
+    if (searchText) {
+      // Set direction.
+      searchDir = 'forward';
+      if ($('#chk-find-direction').prop('checked')) {
+        searchDir = 'back';
+      }
+
+      window.api.send('find_text', {
+        text: searchText,
+        direction: searchDir,
+      });
+    }
+  });
 });
 
 // ============= Helpers ==============
@@ -287,4 +309,11 @@ window.api.receive('current_preferences', (data) => {
   // Update the theme:
   const cssPath = `../node_modules/bootswatch/dist/${data.theme.toLowerCase()}/bootstrap.min.css`;
   document.getElementById('css-theme-link').href = cssPath;
+});
+
+// Start the find process by activating the controls and scrolling there.
+window.api.receive('start_find', () => {
+  const findbox = document.getElementById('find-in-page-text');
+  findbox.scrollIntoView();
+  findbox.focus();
 });
