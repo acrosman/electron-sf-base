@@ -9,7 +9,7 @@
     "pack": "electron-builder --dir",
     "dist": "electron-builder -wlm",
     "postinstall": "electron-builder install-app-deps",
-    "test": "jest --coverage"
+    "test": "jest --coverage --passWithNoTests"
   },
   "build": {
     "appId": "com.electron.electronForce",
