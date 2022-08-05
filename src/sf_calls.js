@@ -39,7 +39,7 @@ const handlers = {
   // Send a list of log messages to the main window.
   get_log_messages: (event, args) => {
     const { offset, count } = args;
-    mainWindow.webContents.send('log_messages', {
+    windows.main.webContents.send('log_messages', {
       messages: logMessages.slice(offset, offset + count),
       totalCount: logMessages.length,
     });

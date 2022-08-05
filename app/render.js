@@ -30,6 +30,27 @@ $.when($.ready).then(() => {
       });
     }
   });
+
+  // Setup event listener for when the console modal opens,
+  // pull in the most recent 50 messages.
+  $('#consoleModal').on('show.bs.modal', (event) => {
+    // Clear existing messages.
+    const messageTable = document.querySelector('#consoleMessageTable');
+    while (messageTable.rows.length > 1) {
+      messageTable.removeChild(messageTable.lastChild);
+    }
+    document.getElementById('log-console-load-more').dataset.count = 0;
+
+    // Load first 50
+    window.api.send('get_log_messages', { offset: 0, count: 50 });
+  });
+
+  // Setup load more action handler for log messages. Unlike the listeners above,
+  // that all call Salesforce, this is just trying to pull more log messages.
+  $('#log-console-load-more').on('click', (event) => {
+    event.preventDefault();
+    window.api.send('get_log_messages', { offset: event.target.dataset.count, count: 50 });
+  });
 });
 
 // ============= Helpers ==============
@@ -61,29 +82,29 @@ const displayRawResponse = (responseObject) => {
 
 /**
  * Log a message to the console.
- * @param {String} context The part of the system that generated the message.
- * @param {String} importance The level of importance of the message.
+ * @param {Date} timestamp The part of the system that generated the message.
+ * @param {String} channel One of 'Error', 'Info', 'Success', 'Warn', and 'Debug'.
+ * @param {String} title Log message title.
  * @param {String} message The message to display.
- * @param {*} data Raw data to display in JSON viewer.
  */
-function logMessage(context, importance, message, data) {
+function showLogMessage(timestamp, channel, title, message) {
   // Create elements for display.
   const logTable = document.getElementById('consoleMessageTable');
-  const row = logTable.insertRow(1);
+  const row = logTable.insertRow();
   const mesImportance = document.createElement('td');
-  const mesContext = document.createElement('td');
+  const mesTime = document.createElement('td');
+  const mesTitle = document.createElement('td');
   const mesText = document.createElement('td');
-  const mesData = document.createElement('td');
 
   // Add Classes.
   mesText.setAttribute('class', 'console-message');
-  mesData.setAttribute('class', 'console-raw-data');
 
   // Set the row highlights as needed.
-  switch (importance.toLowerCase()) {
+  switch (channel.toLowerCase()) {
     case 'error':
       row.className += 'table-danger';
       break;
+    case 'debug':
     case 'warning':
     case 'warn':
       row.className += 'table-warning';
@@ -91,30 +112,35 @@ function logMessage(context, importance, message, data) {
     case 'success':
       row.className += 'table-success';
       break;
-    default:
+    default: // This will handle info and any junk sent.
       break;
   }
 
   // Add Text
-  mesContext.innerHTML = context;
-  mesImportance.innerHTML = importance;
+  mesTime.innerHTML = new Date(timestamp).toLocaleString();
+  mesImportance.innerHTML = channel;
+  mesTitle.innerHTML = escapeHTML(title);
   mesText.innerHTML = escapeHTML(message);
 
   // Attach Elements
   row.appendChild(mesImportance);
-  row.appendChild(mesContext);
+  row.appendChild(mesTime);
+  row.appendChild(mesTitle);
   row.appendChild(mesText);
-  row.appendChild(mesData);
+}
 
-  if (data) {
-    displayRawResponse(data);
-    $('#consoleMessageTable :last-child td.console-raw-data').jsonViewer(data, {
-      collapsed: true,
-      rootCollapsable: false,
-      withQuotes: true,
-      withLinks: true,
-    });
-  }
+/**
+ * Display a list of messages pulled from the main thread.
+ * @param {Array} messageList
+ */
+function displayMessages(messageList) {
+  messageList.forEach((message) => {
+    showLogMessage(message.timestamp, message.channel, message.message)
+  });
+
+  let currentCount = parseInt(document.getElementById('log-console-load-more').dataset.count, 10);
+  currentCount += messageList.length;
+  document.getElementById('log-console-load-more').dataset.count = currentCount;
 }
 
 // Convert a simple object with name/value pairs, and sub-objects into an Unordered list
@@ -271,8 +297,8 @@ document.getElementById('logout-trigger').addEventListener('click', () => {
 
 // ===== Response handlers from IPC Messages to render context ======
 // Process a log message.
-window.api.receive('log_message', (data) => {
-  logMessage(data.sender, data.channel, data.message);
+window.api.receive('log_messages', (data) => {
+  displayMessages(data.messages);
 });
 
 // Login response.
