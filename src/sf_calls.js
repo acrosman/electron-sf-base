@@ -1,15 +1,21 @@
 const jsforce = require('jsforce');
 
+// A collection of active Salesforce connections, keyed by Org Id
 const sfConnections = {};
-let mainWindow = null;
 
-const setwindow = (windowName, window) => {
-  switch (windowName) {
-    case 'main':
-    default:
-      mainWindow = window;
-      break;
-  }
+// A collection of windows for call outs by name (when needed)
+const windows = {};
+
+const logMessages = [];
+
+/**
+ * Attaches a window to this library. Generally only 'main' is needed, but
+ * other windows can be added as needed.
+ * @param {*} windowName
+ * @param {*} window
+ */
+const setWindow = (windowName, window) => {
+  windows[windowName] = window;
 };
 
 /**
@@ -20,7 +26,7 @@ const setwindow = (windowName, window) => {
  * @returns True (always).
  */
 const logMessage = (title, channel, message) => {
-  mainWindow.webContents.send('log_message', {
+  windows.main.webContents.send('log_message', {
     sender: title,
     channel,
     message,
@@ -54,7 +60,7 @@ const handlers = {
           `Login Failed ${err}`,
         );
 
-        mainWindow.webContents.send('response_generic', {
+        windows.main.webContents.send('response_generic', {
           status: false,
           message: 'Login Failed',
           response: err,
@@ -77,7 +83,7 @@ const handlers = {
         accessToken: conn.accessToken,
       };
 
-      mainWindow.webContents.send('response_login', {
+      windows.main.webContents.send('response_login', {
         status: true,
         message: 'Login Successful',
         response: userInfo,
@@ -92,7 +98,7 @@ const handlers = {
     const conn = new jsforce.Connection(sfConnections[args.org]);
     conn.logout((err) => {
       if (err) {
-        mainWindow.webContents.send('response_logout', {
+        windows.main.webContents.send('response_logout', {
           status: false,
           message: 'Logout Failed',
           response: `${err}`,
@@ -107,7 +113,7 @@ const handlers = {
         return true;
       }
       // now the session has been expired.
-      mainWindow.webContents.send('response_logout', {
+      windows.main.webContents.send('response_logout', {
         status: true,
         message: 'Logout Successful',
         response: {},
