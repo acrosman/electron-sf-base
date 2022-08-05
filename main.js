@@ -69,7 +69,7 @@ function createWindow() {
   mainWindow.loadURL(`file://${__dirname}/app/index.html`);
 
   // Attach to IPC handlers
-  ipcFunctions.setwindow('main', mainWindow);
+  ipcFunctions.setWindow('main', mainWindow);
 
   // Attach to preference system.
   setMainWindow(mainWindow);
