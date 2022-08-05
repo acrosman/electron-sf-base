@@ -26,8 +26,9 @@ const setWindow = (windowName, window) => {
  * @returns True (always).
  */
 const logMessage = (title, channel, message) => {
-  windows.main.webContents.send('log_message', {
-    sender: title,
+  logMessages.unshift({
+    timestamp: Date.now(),
+    title,
     channel,
     message,
   });
@@ -35,6 +36,14 @@ const logMessage = (title, channel, message) => {
 };
 
 const handlers = {
+  // Send a list of log messages to the main window.
+  get_log_messages: (event, args) => {
+    const { offset, count } = args;
+    mainWindow.webContents.send('log_messages', {
+      messages: logMessages.slice(offset, offset + count),
+      totalCount: logMessages.length,
+    });
+  },
   // Login to an org using password authentication.
   sf_login: (event, args) => {
     const conn = new jsforce.Connection({
@@ -135,4 +144,4 @@ const handlers = {
 };
 
 exports.handlers = handlers;
-exports.setwindow = setwindow;
+exports.setWindow = setWindow;

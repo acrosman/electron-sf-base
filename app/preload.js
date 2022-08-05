@@ -20,7 +20,7 @@ contextBridge.exposeInMainWorld(
     receive: (channel, func) => {
       const validChannels = [
         'current_preferences',
-        'log_message',
+        'log_messages',
         'response_login',
         'response_logout',
         'response_generic',
