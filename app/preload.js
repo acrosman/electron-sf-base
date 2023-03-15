@@ -1,6 +1,5 @@
 // Preload script.
 const { contextBridge, ipcRenderer } = require('electron');  // eslint-disable-line
-const { handlers } = require('../src/sf_calls');
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object.
