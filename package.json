@@ -4,57 +4,14 @@
   "description": "An Electron Wrapper on JSForce that is meant to be extended.",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
-    "lint": "eslint --ignore-path .gitignore src",
-    "pack": "electron-builder --dir",
-    "dist": "electron-builder -wlm",
-    "postinstall": "electron-builder install-app-deps",
-    "test": "jest --coverage --passWithNoTests"
-  },
-  "build": {
-    "appId": "com.electron.electronForce",
-    "productName": "ElectronForce",
-    "mac": {
-      "category": "public.app-category.utilities"
-    },
-    "dmg": {
-      "contents": [
-        {
-          "x": 110,
-          "y": 150
-        },
-        {
-          "x": 440,
-          "y": 150,
-          "type": "link",
-          "path": "/Applications"
-        }
-      ],
-      "artifactName": "electron-force-${version}.${ext}"
-    },
-    "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        },
-        {
-          "target": "portable"
-        }
-      ]
-    },
-    "nsis": {
-      "runAfterFinish": true,
-      "artifactName": "electron-force-${version}.${ext}"
-    },
-    "portable": {
-      "artifactName": "electron-force.exe"
-    },
-    "linux": {
-      "target": "zip"
-    }
+    "start": "electron-forge start",
+    "lint": "eslint src app --ignore-path .gitignore ",
+    "test": "jest --coverage",
+    "test-on-commit": "jest",
+    "prepare": "husky install",
+    "package": "electron-forge package",
+    "publish": "electron-forge publish",
+    "make": "electron-forge make"
   },
   "keywords": [
     "Electron",
@@ -70,7 +27,9 @@
   "dependencies": {
     "bootstrap": "^4.5.2",
     "bootswatch": "^4.5.2",
+    "electron-squirrel-startup": "^1.0.0",
     "fs-extra": "^8.1.0",
+    "husky": "^8.0.3",
     "jquery": "^3.5.1",
     "jquery.json-viewer": "^1.4.0",
     "jsforce": "^1.10.1",
@@ -78,9 +37,16 @@
     "popper.js": "^1.16.1"
   },
   "devDependencies": {
+    "@electron-forge/cli": "^6.0.3",
+    "@electron-forge/maker-deb": "^6.0.3",
+    "@electron-forge/maker-dmg": "^6.0.3",
+    "@electron-forge/maker-rpm": "^6.0.3",
+    "@electron-forge/maker-squirrel": "^6.0.3",
+    "@electron-forge/maker-zip": "^6.0.3",
+    "@electron-forge/plugin-electronegativity": "^6.0.3",
+    "@electron-forge/publisher-github": "^6.0.4",
     "debug-menu": "^0.6.1",
     "electron": "^23",
-    "electron-builder": "^22.8.1",
     "electron-debug": "^2.2.0",
     "electron-reloader": "^1.1.0",
     "eslint": "^8.11.0",
