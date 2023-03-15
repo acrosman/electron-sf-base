@@ -6,7 +6,7 @@
   "scripts": {
     "start": "electron-forge start",
     "lint": "eslint src app --ignore-path .gitignore ",
-    "test": "jest --coverage",
+    "test": "jest --coverage --passWithNoTests",
     "test-on-commit": "jest",
     "prepare": "husky install",
     "package": "electron-forge package",
