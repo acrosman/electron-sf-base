@@ -33,7 +33,7 @@ $.when($.ready).then(() => {
 
   // Setup event listener for when the console modal opens,
   // pull in the most recent 50 messages.
-  $('#consoleModal').on('show.bs.modal', (event) => {
+  $('#consoleModal').on('show.bs.modal', () => {
     // Clear existing messages.
     const messageTable = document.querySelector('#consoleMessageTable');
     while (messageTable.rows.length > 1) {
@@ -135,7 +135,7 @@ function showLogMessage(timestamp, channel, title, message) {
  */
 function displayMessages(messageList) {
   messageList.forEach((message) => {
-    showLogMessage(message.timestamp, message.channel, message.message)
+    showLogMessage(message.timestamp, message.channel, message.message);
   });
 
   let currentCount = parseInt(document.getElementById('log-console-load-more').dataset.count, 10);
