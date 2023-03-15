@@ -10,9 +10,14 @@ contextBridge.exposeInMainWorld(
   {
     send: (channel, data) => {
       // List channels to allow.
-      const validChannels = Object.getOwnPropertyNames(handlers);
-      validChannels.push('get_preferences');
-      validChannels.push('find_text');
+      const validChannels = [
+        'find_text',
+        'get_log_messages',
+        'get_preferences',
+        'sf_login',
+        'sf_logout',
+        'send_log',
+      ];
       if (validChannels.includes(channel)) {
         ipcRenderer.send(channel, data);
       }
