@@ -10,6 +10,7 @@ This base package provides some plumbing and a the ability to connect to an org 
     unzip electron-sf-base.zip
     cd electron-sf-base
     npm install
+    npm run prepare
     npm start
 
 One the application is running you'll likely want to update the package.json file, start a git repository, replace this readme, and get to work on your project.
