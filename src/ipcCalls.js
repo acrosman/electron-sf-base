@@ -56,18 +56,42 @@ const handlers = {
       password = `${password}${args.token}`;
     }
 
-    conn.login(args.username, password, (err, userInfo) => {
-      // Since we send the args back to the interface, it's a good idea
-      // to remove the security information.
-      args.password = '';
-      args.token = '';
+    conn.login(args.username, password).then(
+      (userInfo) => {
+        // Now you can get the access token and instance URL information.
+        // Save them to establish connection next time.
+        logMessage(
+          event.sender.getTitle(),
+          'Info',
+          `Connection Org ${userInfo.organizationId} for User ${userInfo.id}`,
+        );
 
-      if (err) {
+        // Save the next connection in the global storage.
+        sfConnections[userInfo.organizationId] = {
+          instanceUrl: conn.instanceUrl,
+          accessToken: conn.accessToken,
+        };
+
+        windows.main.webContents.send('response_login', {
+          status: true,
+          message: 'Login Successful',
+          response: userInfo,
+          limitInfo: conn.limitInfo,
+          request: args,
+        });
+        return true;
+      },
+      (err) => {
         logMessage(
           event.sender.getTitle(),
           'Error',
           `Login Failed ${err}`,
         );
+
+        // Since we send the args back to the interface, it's a good idea
+        // to remove the security information.
+        args.password = '';
+        args.token = '';
 
         windows.main.webContents.send('response_generic', {
           status: false,
@@ -78,35 +102,25 @@ const handlers = {
         });
         return true;
       }
-      // Now you can get the access token and instance URL information.
-      // Save them to establish connection next time.
-      logMessage(
-        event.sender.getTitle(),
-        'Info',
-        `Connection Org ${userInfo.organizationId} for User ${userInfo.id}`,
-      );
-
-      // Save the next connection in the global storage.
-      sfConnections[userInfo.organizationId] = {
-        instanceUrl: conn.instanceUrl,
-        accessToken: conn.accessToken,
-      };
-
-      windows.main.webContents.send('response_login', {
-        status: true,
-        message: 'Login Successful',
-        response: userInfo,
-        limitInfo: conn.limitInfo,
-        request: args,
-      });
-      return true;
-    });
+    );
   },
   // Logout of a specific Salesforce org.
   sf_logout: (event, args) => {
     const conn = new jsforce.Connection(sfConnections[args.org]);
-    conn.logout((err) => {
-      if (err) {
+    conn.logout().then(
+      (result) => {
+        // now the session has been expired.
+        windows.main.webContents.send('response_logout', {
+          status: true,
+          message: 'Logout Successful',
+          response: {},
+          limitInfo: conn.limitInfo,
+          request: args,
+        });
+        sfConnections[args.org] = null;
+        return true;
+      },
+      (err) => {
         windows.main.webContents.send('response_logout', {
           status: false,
           message: 'Logout Failed',
@@ -120,18 +134,7 @@ const handlers = {
           `Logout Failed ${err}`,
         );
         return true;
-      }
-      // now the session has been expired.
-      windows.main.webContents.send('response_logout', {
-        status: true,
-        message: 'Logout Successful',
-        response: {},
-        limitInfo: conn.limitInfo,
-        request: args,
       });
-      sfConnections[args.org] = null;
-      return true;
-    });
   },
   send_log: (event, args) => {
     logMessage(
