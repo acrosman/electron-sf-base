@@ -4,15 +4,15 @@ const { utils: { fromBuildIdentifier } } = require('@electron-forge/core');
 module.exports = {
   buildIdentifier: process.env.IS_BETA ? 'beta' : 'prod',
   packagerConfig: {
-    appBundleId: fromBuildIdentifier({ beta: 'com.beta.acrosman.sf-bar', prod: 'com.sf-base' }),
+    appBundleId: fromBuildIdentifier({ beta: 'com.beta.acrosman.sf-bar', prod: 'com.sfBase' }),
   },
   rebuildConfig: {},
   makers: [
     {
       name: '@electron-forge/maker-squirrel',
       config: {
-        exe: 'sf-base.exe',
-        name: 'sf-base',
+        exe: 'sfBase.exe',
+        name: 'sfBase',
         authors: 'Aaron Crosman',
       },
     },
@@ -39,7 +39,7 @@ module.exports = {
       config: {
         repository: {
           owner: 'acrosman',
-          name: 'sf-base',
+          name: 'sfBase',
         },
         prerelease: false,
         draft: true,
