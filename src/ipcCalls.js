@@ -101,14 +101,14 @@ const handlers = {
           request: args,
         });
         return true;
-      }
+      },
     );
   },
   // Logout of a specific Salesforce org.
   sf_logout: (event, args) => {
     const conn = new jsforce.Connection(sfConnections[args.org]);
     conn.logout().then(
-      (result) => {
+      () => {
         // now the session has been expired.
         windows.main.webContents.send('response_logout', {
           status: true,
@@ -134,7 +134,8 @@ const handlers = {
           `Logout Failed ${err}`,
         );
         return true;
-      });
+      },
+    );
   },
   send_log: (event, args) => {
     logMessage(
