@@ -23,7 +23,7 @@ if (require('electron-squirrel-startup')) app.quit();
 const path = require('path');
 
 // Import the functions that we can use in the render processes.
-const ipcFunctions = require('./src/sf_calls');
+const ipcFunctions = require('./src/ipcCalls');
 
 // Import Search support.
 const { executeSearch } = require('./src/find');
