@@ -4,7 +4,7 @@ const { utils: { fromBuildIdentifier } } = require('@electron-forge/core');
 module.exports = {
   buildIdentifier: process.env.IS_BETA ? 'beta' : 'prod',
   packagerConfig: {
-    appBundleId: fromBuildIdentifier({ beta: 'com.beta.acrosman.sf-bar', prod: 'com.sfBase' }),
+    appBundleId: fromBuildIdentifier({ beta: 'com.beta.acrosman.sf-base', prod: 'com.sfBase' }),
   },
   rebuildConfig: {},
   makers: [
