@@ -37,16 +37,16 @@
     "popper.js": "^1.16.1"
   },
   "devDependencies": {
-    "@electron-forge/cli": "^6.0.3",
-    "@electron-forge/maker-deb": "^6.0.3",
-    "@electron-forge/maker-dmg": "^6.0.3",
-    "@electron-forge/maker-rpm": "^6.0.3",
-    "@electron-forge/maker-squirrel": "^6.0.3",
-    "@electron-forge/maker-zip": "^6.0.3",
-    "@electron-forge/plugin-electronegativity": "^6.0.3",
-    "@electron-forge/publisher-github": "^6.0.4",
+    "@electron-forge/cli": "^7",
+    "@electron-forge/maker-deb": "^7",
+    "@electron-forge/maker-dmg": "^7",
+    "@electron-forge/maker-rpm": "^7",
+    "@electron-forge/maker-squirrel": "^7",
+    "@electron-forge/maker-zip": "^7",
+    "@electron-forge/plugin-electronegativity": "^7",
+    "@electron-forge/publisher-github": "^7",
     "debug-menu": "^0.6.1",
-    "electron": "^26",
+    "electron": "^38",
     "electron-debug": "^2.2.0",
     "electron-reloader": "^1.1.0",
     "eslint": "^8.40",
@@ -57,6 +57,6 @@
     "eslint-plugin-jsx-a11y": "^6.5.1",
     "eslint-plugin-react": "^7.29.3",
     "eslint-plugin-react-hooks": "^4.3.0",
-    "jest": "^27.0.6"
+    "jest": "^30"
   }
 }
